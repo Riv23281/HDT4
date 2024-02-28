@@ -2,102 +2,117 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Stack;
+import java.util.StringTokenizer;
 
 public class ExpressionEvaluator {
-    public ExpressionEvaluator(IStack<Character> operatorStack, IStack<Double> valueStack) {
+    public static void main(String[] args) {
+        try {
+            String infixExpression = readExpressionFromFile("datos.txt");
+            System.out.println("Infix Expression: " + infixExpression);
+
+            String postfixExpression = infixToPostfix(infixExpression);
+            System.out.println("Postfix Expression: " + postfixExpression);
+
+            int result = evaluatePostfix(postfixExpression);
+            System.out.println("Result: " + result);
+        } catch (IOException e) {
+            System.err.println("Error reading expression from file: " + e.getMessage());
+        }
     }
 
-    public double evaluateFromFile(String filename) throws IOException {
-        String infixExpression = readFromFile(filename);
-        String postfixExpression = infixToPostfix(infixExpression);
-        return evaluatePostfix(postfixExpression);
+    public static String readExpressionFromFile(String filePath) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        StringBuilder expression = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            expression.append(line.trim());
+        }
+        reader.close();
+        return expression.toString();
     }
 
-    private String readFromFile(String filename) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
+    public static String infixToPostfix(String infixExpression) {
+    StringBuilder postfix = new StringBuilder();
+    Stack<Character> operatorStack = new Stack<>();
+
+    for (char token : infixExpression.toCharArray()) {
+        if (Character.isDigit(token)) {
+            postfix.append(token).append(" ");
+        } else if (isOperator(token)) {
+            while (!operatorStack.isEmpty() && precedence(operatorStack.peek()) >= precedence(token)) {
+                postfix.append(operatorStack.pop()).append(" ");
             }
-        }
-        return sb.toString();
-    }
-
-    private double evaluatePostfix(String postfixExpression) {
-        Stack<Double> operandStack = new Stack<>();
-
-        for (char token : postfixExpression.toCharArray()) {
-            if (Character.isDigit(token)) {
-                operandStack.push((double) (token - '0'));
-            } else if (isOperator(token)) {
-                double rightOperand = operandStack.pop();
-                double leftOperand = operandStack.pop();
-                operandStack.push(performOperation(leftOperand, rightOperand, token));
+            operatorStack.push(token);
+        } else if (token == '(') {
+            operatorStack.push(token);
+        } else if (token == ')') {
+            while (!operatorStack.isEmpty() && operatorStack.peek() != '(') {
+                postfix.append(operatorStack.pop()).append(" ");
             }
+            operatorStack.pop(); // Pop '(' from stack
         }
-
-        return operandStack.pop();
     }
 
-    private String infixToPostfix(String infixExpression) {
-        StringBuilder postfix = new StringBuilder();
-        Stack<Character> stack = new Stack<>();
+    while (!operatorStack.isEmpty()) {
+        postfix.append(operatorStack.pop()).append(" ");
+    }
 
-        for (char token : infixExpression.toCharArray()) {
-            if (Character.isDigit(token)) {
-                postfix.append(token);
-            } else if (isOperator(token)) {
-                while (!stack.isEmpty() && precedence(token) <= precedence(stack.peek())) {
-                    postfix.append(stack.pop());
-                }
-                stack.push(token);
-            } else if (token == '(') {
-                stack.push(token);
-            } else if (token == ')') {
-                while (!stack.isEmpty() && stack.peek() != '(') {
-                    postfix.append(stack.pop());
-                }
-                stack.pop();  // Elimina el paréntesis izquierdo.
+    return postfix.toString().trim();
+}
+
+public static int evaluatePostfix(String postfixExpression) {
+    Stack<Integer> operandStack = new Stack<>();
+    StringTokenizer tokenizer = new StringTokenizer(postfixExpression, " ");
+
+    while (tokenizer.hasMoreTokens()) {
+        String token = tokenizer.nextToken();
+
+        if (Character.isDigit(token.charAt(0))) {
+            operandStack.push(Integer.parseInt(token));
+        } else {
+            int operand2 = operandStack.pop();
+            int operand1 = operandStack.pop();
+            int result = performOperation(operand1, operand2, token.charAt(0));
+            operandStack.push(result);
+        }
+    }
+
+    return operandStack.pop();
+}
+
+public static boolean isOperator(char token) {
+    return token == '+' || token == '-' || token == '*' || token == '/';
+}
+
+public static int precedence(char operator) {
+    switch (operator) {
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        default:
+            return 0;
+    }
+}
+
+public static int performOperation(int operand1, int operand2, char operator) {
+    switch (operator) {
+        case '+':
+            return operand1 + operand2;
+        case '-':
+            return operand1 - operand2;
+        case '*':
+            return operand1 * operand2;
+        case '/':
+            if (operand2 == 0) {
+                throw new ArithmeticException("Division by zero");
             }
-        }
-
-        while (!stack.isEmpty()) {
-            postfix.append(stack.pop());
-        }
-
-        return postfix.toString();
+            return operand1 / operand2;
+        default:
+            throw new IllegalArgumentException("Invalid operator");
     }
+}
 
-    private int precedence(char operator) {
-        switch (operator) {
-            case '+':
-            case '-':
-                return 1;
-            case '*':
-            case '/':
-                return 2;
-            default:
-                return 0;
-        }
-    }
-
-    private boolean isOperator(char token) {
-        return token == '+' || token == '-' || token == '*' || token == '/';
-    }
-
-    private double performOperation(double leftOperand, double rightOperand, char operator) {
-        switch (operator) {
-            case '+':
-                return leftOperand + rightOperand;
-            case '-':
-                return leftOperand - rightOperand;
-            case '*':
-                return leftOperand * rightOperand;
-            case '/':
-                return leftOperand / rightOperand;
-            default:
-                throw new IllegalArgumentException("Operador no válido: " + operator);
-        }
-    }
 }
