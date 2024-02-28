@@ -1,3 +1,7 @@
+/**
+ * Represents a double linked list data structure.
+ * @param <T> the type of elements stored in the list
+ */
 public class DoubleLinkedList<T> extends AbstractList<T> {
     private Node<T> head;
     private Node<T> tail;

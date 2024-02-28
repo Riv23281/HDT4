@@ -1,3 +1,9 @@
+/**
+ * This class represents a stack data structure implemented using an array.
+ * It extends the AbstractStack class and provides methods to push, pop, and peek elements in the stack.
+ *
+ * @param <T> the type of elements stored in the stack
+ */
 public class ArrayStack<T> extends AbstractStack<T> {
     public ArrayStack() {
         super();

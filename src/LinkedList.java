@@ -1,3 +1,10 @@
+/**
+ * This class represents a linked list data structure.
+ * It extends the AbstractList class and implements the List interface.
+ * It provides methods to add, remove, and retrieve elements from the list.
+ *
+ * @param <T> the type of elements stored in the linked list
+ */
 public class LinkedList<T> extends AbstractList<T> {
     private Node<T> head;
 

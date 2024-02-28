@@ -4,6 +4,11 @@ import java.io.IOException;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
+/**
+ * The ExpressionEvaluator class is responsible for evaluating arithmetic expressions.
+ * It provides methods for reading an expression from a file, converting an infix expression to postfix notation,
+ * evaluating a postfix expression, and performing arithmetic operations.
+ */
 public class ExpressionEvaluator {
     public static void main(String[] args) {
         try {

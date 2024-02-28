@@ -1,3 +1,10 @@
+/**
+ * This class represents a stack implemented using a linked list.
+ * It extends the AbstractStack class and provides methods for
+ * pushing, popping, and peeking elements in the stack.
+ *
+ * @param <T> the type of elements stored in the stack
+ */
 public class LinkedStack<T> extends AbstractStack<T> {
     private Node<T> top;
 

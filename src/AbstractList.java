@@ -1,6 +1,12 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * An abstract implementation of the IList interface.
+ * Provides common functionality for list implementations.
+ *
+ * @param <T> the type of elements in the list
+ */
 public abstract class AbstractList<T> implements IList<T> {
     protected List<T> list;
 
