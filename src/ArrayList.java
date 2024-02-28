@@ -1,3 +1,3 @@
-public class ArrayList {
+public class ArrayList<T> extends AbstractList<T> {
 
 }

@@ -1,55 +1,32 @@
-import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Esta clase representa una pila genérica.
- * Implementa la interfaz IStack<T>.
- * Permite almacenar elementos de tipo T en una estructura de pila.
+ * Clase abstracta que proporciona una implementación básica de la interfaz IStack.
+ * Se encarga de manejar la estructura de datos de la pila.
+ * @param <T> Tipo de elemento que se almacenará en la pila.
  */
-public class Stack<T> implements IStack<T> {
+public abstract class AbstractStack<T> implements IStack<T> {
+    protected List<T> stack;
 
-    LispInterpreter lisp = new LispInterpreter();
-    private ArrayList<T> stack;
-
-    /**
-     * Constructor de la clase Stack.
-     * Inicializa una pila vacía.
-     */
-    public Stack() {
-        stack = new ArrayList<>();
+    public AbstractStack() {
+        stack = new java.util.ArrayList<>();
     }
-    
-    /**
-     * Retorna la cantidad de elementos en la pila.
-     * @return La cantidad de elementos en la pila.
-     */
+
     @Override
     public int count() {
         return stack.size();
     }
 
-    /**
-     * Verifica si la pila está vacía.
-     * @return true si la pila está vacía, false de lo contrario.
-     */
     @Override
     public boolean isEmpty() {
         return stack.isEmpty();
     }
 
-    /**
-     * Agrega un elemento a la pila.
-     * @param value El elemento a agregar.
-     */
     @Override
     public void push(T value) {
         stack.add(value);
     }
 
-    /**
-     * Remueve y retorna el elemento en la cima de la pila.
-     * @return El elemento en la cima de la pila.
-     * @throws IllegalStateException si la pila está vacía.
-     */
     @Override
     public T pop() {
         if (!isEmpty()) {
@@ -59,11 +36,6 @@ public class Stack<T> implements IStack<T> {
         }
     }
 
-    /**
-     * Retorna el elemento en la cima de la pila sin removerlo.
-     * @return El elemento en la cima de la pila.
-     * @throws IllegalStateException si la pila está vacía.
-     */
     @Override
     public T peek() {
         if (!isEmpty()) {
