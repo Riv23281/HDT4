@@ -1,26 +1,16 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Stack;
 
 public class ExpressionEvaluator {
-    private IStack<Character> operatorStack;
-    private IStack<Double> valueStack;
-
     public ExpressionEvaluator(IStack<Character> operatorStack, IStack<Double> valueStack) {
-        this.operatorStack = operatorStack;
-        this.valueStack = valueStack;
     }
 
-    public double evaluateFromFile(String filename) {
-        try {
-            String infixExpression = readFromFile(filename);
-            String postfixExpression = infixToPostfix(infixExpression);
-            return evaluatePostfix(postfixExpression);
-        } catch (IOException e) {
-            // Manejo de excepciones al leer el archivo.
-            e.printStackTrace();
-            return 0.0;  // o algún valor predeterminado según el caso.
-        }
+    public double evaluateFromFile(String filename) throws IOException {
+        String infixExpression = readFromFile(filename);
+        String postfixExpression = infixToPostfix(infixExpression);
+        return evaluatePostfix(postfixExpression);
     }
 
     private String readFromFile(String filename) throws IOException {
@@ -40,18 +30,10 @@ public class ExpressionEvaluator {
         for (char token : postfixExpression.toCharArray()) {
             if (Character.isDigit(token)) {
                 operandStack.push((double) (token - '0'));
-            } else if (token == '+') {
-                operandStack.push(operandStack.pop() + operandStack.pop());
-            } else if (token == '-') {
+            } else if (isOperator(token)) {
                 double rightOperand = operandStack.pop();
                 double leftOperand = operandStack.pop();
-                operandStack.push(leftOperand - rightOperand);
-            } else if (token == '*') {
-                operandStack.push(operandStack.pop() * operandStack.pop());
-            } else if (token == '/') {
-                double divisor = operandStack.pop();
-                double dividend = operandStack.pop();
-                operandStack.push(dividend / divisor);
+                operandStack.push(performOperation(leftOperand, rightOperand, token));
             }
         }
 
@@ -65,6 +47,11 @@ public class ExpressionEvaluator {
         for (char token : infixExpression.toCharArray()) {
             if (Character.isDigit(token)) {
                 postfix.append(token);
+            } else if (isOperator(token)) {
+                while (!stack.isEmpty() && precedence(token) <= precedence(stack.peek())) {
+                    postfix.append(stack.pop());
+                }
+                stack.push(token);
             } else if (token == '(') {
                 stack.push(token);
             } else if (token == ')') {
@@ -72,11 +59,6 @@ public class ExpressionEvaluator {
                     postfix.append(stack.pop());
                 }
                 stack.pop();  // Elimina el paréntesis izquierdo.
-            } else {
-                while (!stack.isEmpty() && precedence(token) <= precedence(stack.peek())) {
-                    postfix.append(stack.pop());
-                }
-                stack.push(token);
             }
         }
 
@@ -97,6 +79,25 @@ public class ExpressionEvaluator {
                 return 2;
             default:
                 return 0;
+        }
+    }
+
+    private boolean isOperator(char token) {
+        return token == '+' || token == '-' || token == '*' || token == '/';
+    }
+
+    private double performOperation(double leftOperand, double rightOperand, char operator) {
+        switch (operator) {
+            case '+':
+                return leftOperand + rightOperand;
+            case '-':
+                return leftOperand - rightOperand;
+            case '*':
+                return leftOperand * rightOperand;
+            case '/':
+                return leftOperand / rightOperand;
+            default:
+                throw new IllegalArgumentException("Operador no válido: " + operator);
         }
     }
 }

@@ -1,102 +1,64 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.Scanner;
 
-public class ExpressionEvaluator {
-    private IStack<Character> operatorStack;
-    private IStack<Double> valueStack;
+public class Main {
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            System.out.println("Por favor, elija la implementación deseada para el stack:");
+            System.out.println("1. ArrayList");
+            System.out.println("2. Vector");
+            System.out.println("3. Lista");
 
-    public ExpressionEvaluator(IStack<Character> operatorStack, IStack<Double> valueStack) {
-        this.operatorStack = operatorStack;
-        this.valueStack = valueStack;
-    }
+            String stackTypeChoice = scanner.nextLine().toLowerCase();
 
-    public double evaluateFromFile(String filename) {
-        try {
-            String infixExpression = readFromFile(filename);
-            String postfixExpression = infixToPostfix(infixExpression);
-            return evaluatePostfix(postfixExpression);
-        } catch (IOException e) {
-            // Manejo de excepciones al leer el archivo.
-            e.printStackTrace();
-            return 0.0;  // o algún valor predeterminado según el caso.
-        }
-    }
+            IStack<Character> operatorStack;
+            IStack<Double> valueStack;
 
-    private String readFromFile(String filename) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
+            switch (stackTypeChoice) {
+                case "1", "arraylist":
+                    operatorStack = StackFactory.createStack("array");
+                    valueStack = StackFactory.createStack("array");
+                    break;
+                case "2", "vector":
+                    operatorStack = StackFactory.createStack("array");
+                    valueStack = StackFactory.createStack("array");
+                    break;
+                case "3", "lista":
+                    System.out.println("Por favor, elija la implementación deseada para la lista:");
+                    System.out.println("1. Simplemente encadenada");
+                    System.out.println("2. Doblemente encadenada");
+
+                    String listTypeChoice = scanner.nextLine().toLowerCase();
+                    if ("1".equals(listTypeChoice) || "simplemente encadenada".equalsIgnoreCase(listTypeChoice)) {
+                        operatorStack = StackFactory.createStack("linked");
+                        valueStack = StackFactory.createStack("linked");
+                    } else if ("2".equals(listTypeChoice) || "doblemente encadenada".equalsIgnoreCase(listTypeChoice)) {
+                        operatorStack = StackFactory.createStack("doubleLinked");
+                        valueStack = StackFactory.createStack("doubleLinked");
+                    } else {
+                        System.out.println("Opción no válida. Se utilizará la implementación de lista simplemente encadenada por defecto.");
+                        operatorStack = StackFactory.createStack("linked");
+                        valueStack = StackFactory.createStack("linked");
+                    }
+                    break;
+                default:
+                    System.out.println("Opción no válida. Se utilizará la implementación de stack basada en ArrayList por defecto.");
+                    operatorStack = StackFactory.createStack("array");
+                    valueStack = StackFactory.createStack("array");
+                    break;
             }
-        }
-        return sb.toString();
-    }
 
-    private double evaluatePostfix(String postfixExpression) {
-        Stack<Double> operandStack = new Stack<>();
+            System.out.println("Por favor, ingrese el nombre del archivo que contiene la expresión matemática:");
+            String filename = scanner.nextLine();
 
-        for (char token : postfixExpression.toCharArray()) {
-            if (Character.isDigit(token)) {
-                operandStack.push((double) (token - '0'));
-            } else if (token == '+') {
-                operandStack.push(operandStack.pop() + operandStack.pop());
-            } else if (token == '-') {
-                double rightOperand = operandStack.pop();
-                double leftOperand = operandStack.pop();
-                operandStack.push(leftOperand - rightOperand);
-            } else if (token == '*') {
-                operandStack.push(operandStack.pop() * operandStack.pop());
-            } else if (token == '/') {
-                double divisor = operandStack.pop();
-                double dividend = operandStack.pop();
-                operandStack.push(dividend / divisor);
+            ExpressionEvaluator expressionEvaluator = new ExpressionEvaluator(operatorStack, valueStack);
+
+            try {
+                double result = expressionEvaluator.evaluateFromFile(filename);
+                System.out.println("El resultado de la expresión matemática es: " + result);
+            } catch (IOException e) {
+                System.out.println("Error al leer el archivo: " + e.getMessage());
             }
-        }
-
-        return operandStack.pop();
-    }
-
-    private String infixToPostfix(String infixExpression) {
-        StringBuilder postfix = new StringBuilder();
-        Stack<Character> stack = new Stack<>();
-
-        for (char token : infixExpression.toCharArray()) {
-            if (Character.isDigit(token)) {
-                postfix.append(token);
-            } else if (token == '(') {
-                stack.push(token);
-            } else if (token == ')') {
-                while (!stack.isEmpty() && stack.peek() != '(') {
-                    postfix.append(stack.pop());
-                }
-                stack.pop();  // Elimina el paréntesis izquierdo.
-            } else {
-                while (!stack.isEmpty() && precedence(token) <= precedence(stack.peek())) {
-                    postfix.append(stack.pop());
-                }
-                stack.push(token);
-            }
-        }
-
-        while (!stack.isEmpty()) {
-            postfix.append(stack.pop());
-        }
-
-        return postfix.toString();
-    }
-
-    private int precedence(char operator) {
-        switch (operator) {
-            case '+':
-            case '-':
-                return 1;
-            case '*':
-            case '/':
-                return 2;
-            default:
-                return 0;
         }
     }
 }
